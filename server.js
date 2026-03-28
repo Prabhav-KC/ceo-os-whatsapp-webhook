@@ -6,6 +6,8 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "ceo-os-verify-token";
 
+let lastWebhookEvent = null;
+
 app.get("/", (req, res) => {
   res.send("CEO OS WhatsApp webhook is running.");
 });
@@ -23,8 +25,17 @@ app.get("/webhook", (req, res) => {
 });
 
 app.post("/webhook", (req, res) => {
+  lastWebhookEvent = req.body;
   console.log("Webhook event:", JSON.stringify(req.body, null, 2));
   res.sendStatus(200);
+});
+
+app.get("/last-webhook", (req, res) => {
+  if (!lastWebhookEvent) {
+    return res.status(200).json({ message: "No webhook received yet." });
+  }
+
+  return res.status(200).json(lastWebhookEvent);
 });
 
 app.listen(PORT, () => {
